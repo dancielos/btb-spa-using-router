@@ -1,28 +1,32 @@
-import { Link } from 'react-router-dom';
+import { useLoaderData } from 'react-router';
+import EventsList from '../components/EventsList';
+import { DB_URL } from '../config/config';
 
-const DUMMY_EVENTS = [
-	{ id: 'concert', slug: 'concert', name: "Taylor's concert" },
-	{ id: 'wedding', slug: 'wedding', name: 'I hear wedding bells' },
-	{ id: 'game-night', slug: 'game-night', name: "Game night! Who's in?" },
-];
+function EventsPage() {
+	const data = useLoaderData();
 
-const Events = function (props) {
-	return (
-		<>
-			<h1>Events Page</h1>
-			<section className='events-section'>
-				<ul>
-					{DUMMY_EVENTS.map((event) => {
-						return (
-							<li key={event.id}>
-								<Link to={event.slug}>{event.name}</Link>
-							</li>
-						);
-					})}
-				</ul>
-			</section>
-		</>
-	);
+	if (data.isError) {
+		return <p>{data.message}</p>;
+	}
+
+	const events = data.events;
+
+	return <EventsList events={events} />;
+}
+
+export const loader = async function () {
+	// const response = await fetch('http://localhost:8080/eventsss');
+	const response = await fetch(DB_URL);
+
+	if (!response.ok) {
+		// return { isError: true, message: 'Could not fetch events. ' };
+		throw new Response(JSON.stringify({ message: 'Failed to fetch events.' }), {
+			status: 500,
+		});
+	} else {
+		// const resData = await response.json();
+		return response;
+	}
 };
 
-export default Events;
+export default EventsPage;
